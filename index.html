@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8" />
   <title>NEW HEAVEN TOKEN 投げ銭ページ</title>
-  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
   <style>
     body {
       font-family: sans-serif;
@@ -33,13 +32,12 @@
 
   <button onclick="sendToken()">MetaMaskで送金する</button>
 
+  <!-- ✅ ethers.jsをここに読み込む -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
   <script>
-    // トークン・受信者情報
     const tokenAddress = "0x3cc0e67d0abAbEe99F881AbADa7ef9398Dcf3757";
     const recipient = "0x66F1274aD5d042b7571C2EfA943370dbcd3459aB";
     const decimals = 18;
-
-    // トークンコントラクトの最低限ABI（transferのみ）
     const ABI = [
       "function transfer(address to, uint256 amount) public returns (bool)"
     ];
@@ -57,17 +55,13 @@
       }
 
       try {
-        // ウォレット接続
         await window.ethereum.request({ method: "eth_requestAccounts" });
 
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         const signer = provider.getSigner();
         const contract = new ethers.Contract(tokenAddress, ABI, signer);
-
-        // トークン数量を18桁のweiに変換
         const tokenAmount = ethers.utils.parseUnits(amount, decimals);
 
-        // トランザクション送信
         const tx = await contract.transfer(recipient, tokenAmount);
         alert("送金成功！\nトランザクション Hash:\n" + tx.hash);
       } catch (error) {
