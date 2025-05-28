@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>NEW HEAVEN TOKEN 投げ銭ページ</title>
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
   <style>
@@ -28,53 +28,51 @@
     0x66F1274aD5d042b7571C2EfA943370dbcd3459aB
   </p>
 
-  <!-- 🔎 送金額を自由に入力できるフォーム -->
   <label for="amount">送金したいトークン数:</label><br>
   <input id="amount" type="number" step="0.0001" min="0" placeholder="例: 10"><br><br>
 
   <button onclick="sendToken()">MetaMaskで送金する</button>
 
   <script>
-    // ✅ NEW HEAVEN TOKEN 情報
+    // トークン・受信者情報
     const tokenAddress = "0x3cc0e67d0abAbEe99F881AbADa7ef9398Dcf3757";
     const recipient = "0x66F1274aD5d042b7571C2EfA943370dbcd3459aB";
-    const decimals = 18; // 🔎 トークンの小数点桁数（ERC20標準）
+    const decimals = 18;
 
-    // ✅ トークン転送用の最小ABI
+    // トークンコントラクトの最低限ABI（transferのみ）
     const ABI = [
-      "function transfer(address to, uint amount) public returns (bool)"
+      "function transfer(address to, uint256 amount) public returns (bool)"
     ];
 
-    // ✅ MetaMask連携して、ユーザーの入力量を送金
     async function sendToken() {
       const amount = document.getElementById("amount").value;
-
-      // 🔎 入力値チェック
       if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
-        alert("送金したい数量を正しく入力してください");
+        alert("送金するトークン数を正しく入力してください。");
         return;
       }
 
-      // 🔎 MetaMaskチェック
       if (!window.ethereum) {
-        alert("MetaMaskがインストールされていません");
+        alert("MetaMaskが見つかりません。ブラウザに拡張機能をインストールしてください。");
         return;
       }
-
-      await ethereum.request({ method: 'eth_requestAccounts' });
-
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const signer = provider.getSigner();
-      const contract = new ethers.Contract(tokenAddress, ABI, signer);
-
-      // 🔎 入力値を18桁（wei単位）に変換
-      const tokenAmount = ethers.utils.parseUnits(amount, decimals);
 
       try {
+        // ウォレット接続
+        await window.ethereum.request({ method: "eth_requestAccounts" });
+
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const signer = provider.getSigner();
+        const contract = new ethers.Contract(tokenAddress, ABI, signer);
+
+        // トークン数量を18桁のweiに変換
+        const tokenAmount = ethers.utils.parseUnits(amount, decimals);
+
+        // トランザクション送信
         const tx = await contract.transfer(recipient, tokenAmount);
         alert("送金成功！\nトランザクション Hash:\n" + tx.hash);
-      } catch (err) {
-        alert("送金に失敗しました:\n" + err.message);
+      } catch (error) {
+        console.error(error);
+        alert("送金に失敗しました:\n" + error.message);
       }
     }
   </script>
