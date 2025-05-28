@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>NEW HEAVEN TOKEN 投げ銭ページ</title>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding-top: 50px;
+      background: #f4f4f4;
+    }
+    input, button {
+      font-size: 18px;
+      padding: 10px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>💫 NEW HEAVEN TOKEN 投げ銭ページ</h1>
+
+  <p>MetaMaskを開いて、<strong>好きな数量</strong>の<br>
+     <strong>NEW HEAVEN TOKEN</strong> を送金できます。</p>
+
+  <p><strong>送金先:</strong><br>
+    0x66F1274aD5d042b7571C2EfA943370dbcd3459aB
+  </p>
+
+  <!-- 🔎 送金額を自由に入力できるフォーム -->
+  <label for="amount">送金したいトークン数:</label><br>
+  <input id="amount" type="number" step="0.0001" min="0" placeholder="例: 10"><br><br>
+
+  <button onclick="sendToken()">MetaMaskで送金する</button>
+
+  <script>
+    // ✅ NEW HEAVEN TOKEN 情報
+    const tokenAddress = "0x3cc0e67d0abAbEe99F881AbADa7ef9398Dcf3757";
+    const recipient = "0x66F1274aD5d042b7571C2EfA943370dbcd3459aB";
+    const decimals = 18; // 🔎 トークンの小数点桁数（ERC20標準）
+
+    // ✅ トークン転送用の最小ABI
+    const ABI = [
+      "function transfer(address to, uint amount) public returns (bool)"
+    ];
+
+    // ✅ MetaMask連携して、ユーザーの入力量を送金
+    async function sendToken() {
+      const amount = document.getElementById("amount").value;
+
+      // 🔎 入力値チェック
+      if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
+        alert("送金したい数量を正しく入力してください");
+        return;
+      }
+
+      // 🔎 MetaMaskチェック
+      if (!window.ethereum) {
+        alert("MetaMaskがインストールされていません");
+        return;
+      }
+
+      await ethereum.request({ method: 'eth_requestAccounts' });
+
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      const contract = new ethers.Contract(tokenAddress, ABI, signer);
+
+      // 🔎 入力値を18桁（wei単位）に変換
+      const tokenAmount = ethers.utils.parseUnits(amount, decimals);
+
+      try {
+        const tx = await contract.transfer(recipient, tokenAmount);
+        alert("送金成功！\nトランザクション Hash:\n" + tx.hash);
+      } catch (err) {
+        alert("送金に失敗しました:\n" + err.message);
+      }
+    }
+  </script>
+</body>
+</html>
